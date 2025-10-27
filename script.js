@@ -132,12 +132,12 @@ if (newsletterForm) {
     });
 }
 
-// === WINE FILTER FUNCTIONALITY (for wines.html) ===
+// WINE FILTER FUNCTIONALITY - FIXED VERSION
 const filterBtns = document.querySelectorAll('.filter-btn');
 const wineCardsFilter = document.querySelectorAll('[data-category]');
 const wineSections = document.querySelectorAll('[data-wine-category]');
 
-if (filterBtns.length > 0 && wineCardsFilter.length > 0) {
+if (filterBtns.length > 0 && (wineCardsFilter.length > 0 || wineSections.length > 0)) {
     filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             // Remove active class from all buttons
@@ -148,11 +148,20 @@ if (filterBtns.length > 0 && wineCardsFilter.length > 0) {
 
             const filterValue = btn.getAttribute('data-filter');
 
-            // Scroll to top of wine sections smoothly
+            // ALWAYS SCROLL TO WINE SECTION - FIXED!
             const firstSection = document.querySelector('.wines-catalogue-section');
-            if (firstSection && filterValue !== 'all') {
+            if (firstSection) {
+                const navbar = document.getElementById('navbar');
                 const navbarHeight = navbar ? navbar.offsetHeight : 0;
-                const targetPosition = firstSection.getBoundingClientRect().top + window.pageYOffset - navbarHeight - 20;
+                const filterSection = document.querySelector('.wine-filter-section');
+                const filterHeight = filterSection ? filterSection.offsetHeight : 0;
+
+                // Scroll with proper offset
+                const targetPosition = firstSection.getBoundingClientRect().top +
+                    window.pageYOffset -
+                    navbarHeight -
+                    filterHeight -
+                    20; // Extra spacing
 
                 window.scrollTo({
                     top: targetPosition,
@@ -160,82 +169,78 @@ if (filterBtns.length > 0 && wineCardsFilter.length > 0) {
                 });
             }
 
-            // Handle "All" filter
-            if (filterValue === 'all') {
-                // Show all sections with fade-in animation
-                wineSections.forEach((section, index) => {
-                    section.style.opacity = '0';
-                    section.style.display = 'block';
-                    setTimeout(() => {
-                        section.style.transition = 'opacity 0.5s ease';
-                        section.style.opacity = '1';
-                    }, index * 100);
-                });
-
-                // Show all wine cards
-                wineCardsFilter.forEach((card, index) => {
-                    card.style.opacity = '0';
-                    card.style.display = 'flex';
-                    setTimeout(() => {
-                        card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                    }, index * 50);
-                });
-            } else {
-                // Filter by specific category
-
-                // Show/hide sections based on category
-                wineSections.forEach(section => {
-                    const sectionCategory = section.getAttribute('data-wine-category');
-
-                    if (sectionCategory === filterValue) {
+            // Small delay to let scroll start before filtering
+            setTimeout(() => {
+                // Handle "All" filter
+                if (filterValue === 'all') {
+                    // Show all sections
+                    wineSections.forEach((section, index) => {
                         section.style.opacity = '0';
                         section.style.display = 'block';
                         setTimeout(() => {
                             section.style.transition = 'opacity 0.5s ease';
                             section.style.opacity = '1';
-                        }, 100);
-                    } else {
-                        section.style.opacity = '0';
-                        setTimeout(() => {
-                            section.style.display = 'none';
-                        }, 300);
-                    }
-                });
+                        }, index * 100);
+                    });
 
-                // Filter wine cards with staggered animation
-                let visibleIndex = 0;
-                wineCardsFilter.forEach(card => {
-                    const cardCategory = card.getAttribute('data-category');
-
-                    if (cardCategory === filterValue) {
-                        // Show matching cards with delay
+                    // Show all wine cards
+                    wineCardsFilter.forEach((card, index) => {
                         card.style.opacity = '0';
-                        card.style.transform = 'translateY(30px)';
                         card.style.display = 'flex';
-
                         setTimeout(() => {
-                            card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                             card.style.opacity = '1';
                             card.style.transform = 'translateY(0)';
-                        }, visibleIndex * 100);
+                        }, index * 50);
+                    });
+                } else {
+                    // Filter by specific category
+                    wineSections.forEach(section => {
+                        const sectionCategory = section.getAttribute('data-wine-category');
+                        if (sectionCategory === filterValue) {
+                            section.style.opacity = '0';
+                            section.style.display = 'block';
+                            setTimeout(() => {
+                                section.style.transition = 'opacity 0.5s ease';
+                                section.style.opacity = '1';
+                            }, 100);
+                        } else {
+                            section.style.opacity = '0';
+                            setTimeout(() => {
+                                section.style.display = 'none';
+                            }, 300);
+                        }
+                    });
 
-                        visibleIndex++;
-                    } else {
-                        // Hide non-matching cards
-                        card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                        card.style.opacity = '0';
-                        card.style.transform = 'translateY(20px)';
-                        setTimeout(() => {
-                            card.style.display = 'none';
-                        }, 300);
-                    }
-                });
-            }
+                    // Filter wine cards
+                    let visibleIndex = 0;
+                    wineCardsFilter.forEach(card => {
+                        const cardCategory = card.getAttribute('data-category');
+                        if (cardCategory === filterValue) {
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(30px)';
+                            card.style.display = 'flex';
+                            setTimeout(() => {
+                                card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                                card.style.opacity = '1';
+                                card.style.transform = 'translateY(0)';
+                            }, visibleIndex * 100);
+                            visibleIndex++;
+                        } else {
+                            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(20px)';
+                            setTimeout(() => {
+                                card.style.display = 'none';
+                            }, 300);
+                        }
+                    });
+                }
+            }, 100);
         });
     });
 }
+
 
 // === VIDEO PLACEHOLDER CLICK ===
 const videoPlaceholder = document.querySelector('.video-placeholder');
